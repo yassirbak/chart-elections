@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <title>Charte graphique du premier tour de l'éléction présidentielle 2022 à Poitiers</title>
+</head>
+<body>
+<div class="container">
+    <h1>Charte graphique du premier tour de l'élection présidentielle 2022 à Poitiers</h1>
+    <canvas id="canvas"></canvas>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
+
+        *, ::before, ::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 80%;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        #canvas {
+            width: 100%;
+        }
+
+    </style>
+
+    <script>
+        const apiUrl =
+            "https://data.grandpoitiers.fr/api/records/1.0/search/?dataset=resultats_election_fichier_eirel_definitif&q=&facet=bureau_vote&facet=candidat_1&facet=candidat_2&facet=candidat_3&facet=candidat_4&facet=candidat_5&facet=candidat_6&facet=candidat_7&facet=candidat_8&facet=candidat_9&facet=candidat_10&facet=candidat_11&facet=candidat_12";
+
+        async function getApi() {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            console.log(data);
+
+            // Extraction des noms des candidats
+            const candidates = data.facet_groups.map((name) => name.facets[0].name);
+
+            // Suppression du premier élément du tableau candidat qui n'est pas un candidat
+            candidates.shift();
+
+            // Tableau de couleur unique pour chaque candidat
+            const candidatesColor = [
+                "rgba(247, 86, 124, 0.5)", // Nathalie Arthaud
+                "rgba(43, 89, 195, 0.5)", // Nicolas Dupont-Aignan
+                "rgba(255, 135, 171, 0.5)", // Anne Hidalgo
+                "rgba(77, 161, 103, 0.5)", // Yannick Jadot
+                "rgba(73, 182, 255, 0.5)", // Jean Lasalle
+                "rgba(52, 127, 196, 0.5)", // Marine Le Pen
+                "rgba(243 ,167, 18, 0.5)", // Emmanuel Macron
+                "rgba(165, 1, 4, 0.5)", // Jean-Luc Mélenchon
+                "rgba(67, 146, 241, 0.5)", // Valérie Pecresse
+                "rgba(246, 71, 64, 0.5)", // Philippe Poutou
+                "rgba(242, 66, 54, 0.5)", // Fabien Roussel
+                "rgba(20, 70, 160, 0.5)", // Éric Zemmour
+            ];
+
+            // Capture le cumul des données pour chaque candidat
+            const candidatesData = [];
+            for (let i = 1; i <= candidates.length; i++) {
+                candidatesData.push({
+                    name: candidates[i - 1],
+                    votes: data.records
+                        .map((votes) => eval("votes.fields.pourcentage_" + i).toFixed(1) / 10)
+                        .reduce((votes, total) => Number(votes) + Number(total)),
+                    color: candidatesColor[i - 1],
+                });
+            }
+
+            // Utilisation du tri à bulles pour comparer les éléments et échanger leurs positions s'ils ne sont pas dans le bon ordre
+            Array.prototype.bubbleSort = function (callback) {
+                let done = false;
+                while (!done) {
+                    done = true;
+                    for (let i = 1; i < this.length; i += 1) {
+                        if (callback(this[i - 1].votes, this[i].votes)) {
+                            done = false;
+                            let temporary = this[i - 1];
+                            this[i - 1] = this[i];
+                            this[i] = temporary;
+                        }
+                    }
+                }
+            };
+
+            // Tri du tableau d'objet candidats selon leur nombre de votes du plus élevé au plus petit
+            candidatesData.bubbleSort((l, h) => l < h); // Modifier le sens de la > pour avoir du plus petit au plus élevé
+
+            // Initialisation des données pour la charte graphique
+            const ctx = document.getElementById("canvas").getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: candidatesData.map((cbn) => cbn.name),
+                    datasets: [
+                        {
+                            label: "Pourcentage",
+                            data: candidatesData.map((cbv) => cbv.votes),
+                            backgroundColor: candidatesData.map((cbc) => cbc.color),
+                        },
+                    ],
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+        }
+
+        getApi();
+
+    </script>
+</div>
+</body>
+</html>

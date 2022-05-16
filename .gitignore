@@ -1,0 +1,23 @@
+# Ignore Mac system files
+.DS_store
+
+# Ignore IDE configs .idea files
+.idea
+
+# Ignore node_modules folder
+node_modules
+
+# Ignore package.json file
+package.json
+
+# Ignore yarn.lock file
+yarn.lock
+
+# Ignore style.css file
+style.css
+
+# Ignore script.js file
+script.js
+
+# Ignore results json file
+resultats_election_fichier_eirel_definitif.json
