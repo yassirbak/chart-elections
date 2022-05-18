@@ -47,7 +47,7 @@
 
     <script>
         const apiUrl =
-            "https://data.grandpoitiers.fr/api/records/1.0/search/?dataset=resultats_election_fichier_eirel_definitif&q=&facet=bureau_vote&facet=candidat_1&facet=candidat_2&facet=candidat_3&facet=candidat_4&facet=candidat_5&facet=candidat_6&facet=candidat_7&facet=candidat_8&facet=candidat_9&facet=candidat_10&facet=candidat_11&facet=candidat_12";
+            "https://data.grandpoitiers.fr/api/records/1.0/search/?dataset=resultats_election_fichier_eirel_definitif&q=&facet=bureau_vote&facet=candidat_1&facet=candidat_2&facet=candidat_3&facet=candidat_4&facet=candidat_5&facet=candidat_6&facet=candidat_7&facet=candidat_8&facet=candidat_9&facet=candidat_10&facet=candidat_11&facet=candidat_12&rows=100";
 
         async function getApi() {
             const response = await fetch(apiUrl);
@@ -82,7 +82,7 @@
                 candidatesData.push({
                     name: candidates[i - 1],
                     votes: data.records
-                        .map((votes) => eval("votes.fields.pourcentage_" + i).toFixed(1) / 10)
+                        .map((votes) => eval("votes.fields.pourcentage_" + i) / data.records.length)
                         .reduce((votes, total) => Number(votes) + Number(total)),
                     color: candidatesColor[i - 1],
                 });
@@ -116,7 +116,7 @@
                     datasets: [
                         {
                             label: "Pourcentage",
-                            data: candidatesData.map((cbv) => cbv.votes),
+                            data: candidatesData.map((cbv) => cbv.votes.toFixed(2)),
                             backgroundColor: candidatesData.map((cbc) => cbc.color),
                         },
                     ],
